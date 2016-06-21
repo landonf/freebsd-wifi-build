@@ -1,0 +1,15 @@
+# Base configuration
+X_BUILD_BASE_CFG="mipsel"
+
+KERNCONF=SENTRY5
+TRX_COMPRESSION_GZIP=YES
+
+X_MAKEFS_ENDIAN=le
+X_MAKEFS_FLAGS_EXT="label=FBSD"
+
+#X_FSIMAGE_CMD="mkulzma"
+#X_FSIMAGE_ARGS="-s 65536 -v"
+#X_FSIMAGE_SUFFIX=".ulzma"
+
+# Building the firmware image
+X_BUILD_BUILD_IMG_DEFAULTS="mfsroot fsimage trx"
