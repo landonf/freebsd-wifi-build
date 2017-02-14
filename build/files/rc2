@@ -14,11 +14,19 @@ mkdir -p /var/empty
 mkdir -p /var/cron
 mkdir -p /var/cron/tabs
 
-echo "*** Loading configuration files .."
-cfg_load
+. /etc/board.cfg || exit 1
+
+recovery=0
+
+if [ "${RECOVERY_PIN}" != "" ] && [ "$(gpioctl "${RECOVERY_PIN}")" -eq "${RECOVERY_PIN_ACTIVE}" ]; then
+	recovery=1
+	echo "*** Not loading configuration files, in recovery mode .."
+else
+	echo "*** Loading configuration files .."
+	cfg_load
+fi
 
 # At this point a base configuration file exists in /etc/cfg/rc.conf.
-
 . /etc/rc.conf.default
 . /etc/cfg/rc.conf
 
@@ -43,12 +51,24 @@ echo "*** Default password/login databases .."
 /usr/sbin/pwd_mkdb /etc/master.passwd
 /usr/bin/cap_mkdb /etc/login.conf
 
+# sysctl
+echo "*** Customising sysctl .."
+/etc/rc.d/base/sysctl start
+
 # Start network
 echo "*** Starting networking via /etc/rc.d/base/net"
 /etc/rc.d/base/net start
 
-echo "*** inetd"
-/usr/sbin/inetd
+# run cron/inetd as default
+/etc/rc.d/srv/cron start
+/etc/rc.d/srv/inetd start
+
+# Start firewall; needs networking up
+/etc/rc.d/base/firewall start
+/etc/rc.d/base/routing start
+
+# Start services
+/etc/rc.d/base/srv start
 
 echo "*** Done!"
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 SCRIPT_NAME="`basename $0`"
-SCRIPT_DIR="`dirname $0`"
+SCRIPT_DIR="$(dirname `realpath $0`)"
 CUR_DIR="`pwd`"
 
 # suck in the per-device options
@@ -10,7 +10,7 @@ shift
 . ${SCRIPT_DIR}/../cfg/${CFGNAME} || exit 1
 
 # If X_BUILD_BASE_CFG is set, also load that in.
-if [ "x${X_BUILD_BASE_CFG}" != "x" ]; then
+if [ -n "${X_BUILD_BASE_CFG}" ]; then
 	. ${SCRIPT_DIR}/../cfg/base/${X_BUILD_BASE_CFG} || exit 1
 fi
 
@@ -194,7 +194,7 @@ ${INSTALL_SUID_BIN} ${X_DESTDIR}/usr/bin/login ${X_STAGING_FSROOT}/usr/bin
 
 ${INSTALL_DEF_LIB} ${X_DESTDIR}/lib/libelf.so.2 ${X_STAGING_FSROOT}/usr/lib/
 
-${INSTALL_DEF_LIB} ${X_DESTDIR}/usr/lib/libpam.so.5 ${X_STAGING_FSROOT}/usr/lib
+${INSTALL_DEF_LIB} ${X_DESTDIR}/usr/lib/libpam.so.6 ${X_STAGING_FSROOT}/usr/lib
 ${INSTALL_DEF_LIB} ${X_DESTDIR}/usr/lib/libbsm.so.3 ${X_STAGING_FSROOT}/usr/lib
 ${INSTALL_DEF_LIB} ${X_DESTDIR}/usr/lib/pam_deny.so ${X_STAGING_FSROOT}/usr/lib
 ${INSTALL_DEF_LIB} ${X_DESTDIR}/usr/lib/pam_group.so ${X_STAGING_FSROOT}/usr/lib
@@ -266,7 +266,7 @@ ${INSTALL_DEF_LIB} ${X_DESTDIR}/libexec/ld-elf.so.1 ${X_STAGING_FSROOT}/libexec
 ${INSTALL_DEF_LIB} ${X_DESTDIR}/lib/libc.so.7 ${X_STAGING_FSROOT}/lib
 ${INSTALL_DEF_LIB} ${X_DESTDIR}/lib/libcrypt.so.5 ${X_STAGING_FSROOT}/lib
 ${INSTALL_DEF_LIB} ${X_DESTDIR}/lib/libutil.so.9 ${X_STAGING_FSROOT}/lib
-${INSTALL_DEF_LIB} ${X_DESTDIR}/lib//lib/lib80211.so.1 ${X_STAGING_FSROOT}/lib/
+${INSTALL_DEF_LIB} ${X_DESTDIR}/lib/lib80211.so.1 ${X_STAGING_FSROOT}/lib/
 
 ${INSTALL_DEF_LIB} ${X_DESTDIR}/usr/lib/libgpio.so.0 ${X_STAGING_FSROOT}/usr/lib/
 ${INSTALL_DEF_LIB} ${X_DESTDIR}/lib/libxo.so.0 ${X_STAGING_FSROOT}/lib/
@@ -316,6 +316,8 @@ ${INSTALL_DEF_FILE} ${X_DESTDIR}/etc/netconfig ${X_STAGING_FSROOT}/c/etc
 echo "# Configuration for: ${KERNCONF}" > ${X_STAGING_TMPDIR}/board.cfg
 echo "CFG_PATH=\"${BIN_CFG_PARTITION}\"" >> ${X_STAGING_TMPDIR}/board.cfg
 echo "CFG_SIZE=\"${BIN_CFG_SIZE}\"" >> ${X_STAGING_TMPDIR}/board.cfg
+echo "RECOVERY_PIN=\"${RECOVERY_PIN}\"" >> ${X_STAGING_TMPDIR}/board.cfg
+echo "RECOVERY_PIN_ACTIVE=\"${RECOVERY_PIN_ACTIVE}\"" >> ${X_STAGING_TMPDIR}/board.cfg
 
 ${INSTALL_DEF_BIN} ${X_STAGING_TMPDIR}/board.cfg ${X_STAGING_FSROOT}/c/etc
 
@@ -326,7 +328,7 @@ cat ${X_BASEDIR}/files/rc.conf | sed "s|@DEF_ETH@|${X_CFG_DEFAULT_ETHER}|" \
 ${INSTALL_DEF_FILE} ${X_STAGING_TMPDIR}/rc.conf ${X_STAGING_FSROOT}/c/etc/cfg/
 
 # kernel modules - if required
-if [ "x${MFSROOT_INC_MODULES}" = "xYES" ]; then
+if [ "${MFSROOT_INC_MODULES}" = "YES" ]; then
 	echo "*** Including modules.."
 
 	for i in ${MFSROOT_INC_MODULE_LIST}; do
